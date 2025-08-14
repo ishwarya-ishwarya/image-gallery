@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weather Forecast</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding: 20px;
+    }
+    canvas {
+      max-width: 600px;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Weather Forecast</h1>
+  <input type="text" id="city" placeholder="Enter city name">
+  <button onclick="getWeather()">Get Forecast</button>
+  <canvas id="forecastChart"></canvas>
+
+  <script>
+    async function getWeather() {
+      const city = document.getElementById('city').value;
+      const apiKey = 'YOUR_API_KEY'; // Replace with your OpenWeatherMap API key
+      const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.cod !== "200") {
+          alert("City not found or API error.");
+          return;
+        }
+
+        const labels = [];
+        const temps = [];
+
+        data.list.forEach((entry, index) => {
+          if (index % 8 === 0) {
+            labels.push(entry.dt_txt.split(' ')[0]);
+            temps.push(entry.main.temp);
+          }
+        });
+
+        const ctx = document.getElementById('forecastChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: `Temperature in ${city} (°C)`,
+              data: temps,
+              borderColor: 'blue',
+              backgroundColor: 'lightblue',
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: { beginAtZero: false }
+            }
+          }
+        });
+      } catch (error) {
+        alert("Failed to fetch weather data.");
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
